@@ -1,0 +1,47 @@
+@prefix rca: <http://example.org/rca#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Class Definitions
+rca:ProcessParameter rdf:type rdfs:Class .
+rca:DefectMode rdf:type rdfs:Class .
+rca:EquipmentComponent rdf:type rdfs:Class .
+
+# Causal Relationship
+rca:causes rdf:type rdf:Property ;
+    rdfs:domain rca:ProcessParameter ;
+    rdfs:range rca:DefectMode .
+
+# 1. Wire Bonding Parameters (打線封裝參數)
+rca:EFO_Current rdf:type rca:ProcessParameter ;
+    rdfs:label "EFO 電流 (Electronic Flame Off)" .
+
+rca:Bond_Force rdf:type rca:ProcessParameter ;
+    rdfs:label "銲接壓力 (Bond Force)" .
+
+rca:Ultrasonic_Power rdf:type rca:ProcessParameter ;
+    rdfs:label "超音波功率 (US Power)" .
+
+rca:Capillary_Life rdf:type rca:ProcessParameter ;
+    rdfs:label "瓷嘴壽命 (Capillary Wear Out)" .
+
+# 2. Defect Modes (缺陷路徑)
+rca:NSOP rdf:type rca:DefectMode ;
+    rdfs:label "金線剝離 (Non-stick on Pad)" .
+
+rca:Cratered_Die rdf:type rca:DefectMode ;
+    rdfs:label "矽墊受損 (Cratered Die)" .
+
+rca:Ball_Size_Variation rdf:type rca:DefectMode ;
+    rdfs:label "金球尺寸變異 (Ball Size Variation)" .
+
+rca:IMC_Issue rdf:type rca:DefectMode ;
+    rdfs:label "IMC 生成異常 (Intermetallic Compound)" .
+
+# 3. Causal Links (因果網絡實作)
+rca:Bond_Force rca:causes rca:NSOP .
+rca:Ultrasonic_Power rca:causes rca:Cratered_Die .
+rca:EFO_Current rca:causes rca:Ball_Size_Variation .
+rca:Capillary_Life rca:causes rca:NSOP .
+rca:Capillary_Life rca:causes rca:Ball_Size_Variation .

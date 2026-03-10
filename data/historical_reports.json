@@ -1,0 +1,38 @@
+[
+    {
+        "id": "RPT-2026-WB-05",
+        "defect": "矽墊受損",
+        "root_cause": "US Power (超音波功率) 超出規格限",
+        "description": "於產線 BATCH#A291 抽檢發現 Cratered Die 缺陷。根據 SEM 掃描電子顯微鏡觀察，矽墊下方有微裂紋。分析發現機台 WB-05 的 US Power 校正偏移，測得值 75mW (標準 < 60mW)。",
+        "source": "半導體封裝物理手冊 - 物理失效章節",
+        "page": 245,
+        "link": "https://example.org/docs/physics-of-pkg#p245"
+    },
+    {
+        "id": "RPT-2025-WB-12",
+        "defect": "金線剝離",
+        "root_cause": "Capillary (瓷嘴) 超過使用壽命",
+        "description": "當日 NSOP (Non-Stick on Pad) 比例上升至 2.5%。更換機台 WB-12 瓷嘴後改善。調查發現該瓷嘴已累計使用 1.2M 銲點，超過原廠規範之 1.0M 壽命點數，導致尖端磨損。",
+        "source": "設備管維規範 - 打線機維護手冊",
+        "page": 44,
+        "link": "https://example.org/maint/wb-cap-manual#p44"
+    },
+    {
+        "id": "RPT-2025-QA-21",
+        "defect": "銲點偏移",
+        "root_cause": "EFO Current 電子火焰電流不穩",
+        "description": "AOI 檢測發現 Ball Offset 超標。主因為 EFO 放電過程針尖 (EFO Wand) 積碳嚴重，導致金球成形 (FAB) 不規則且偏心，進而造成銲接後 Ball Center 偏移。",
+        "source": "打線製程標準作業程序 (SOP)",
+        "page": 112,
+        "link": "https://example.org/sop/wb-fab-process#p112"
+    },
+    {
+        "id": "RPT-2024-PKG-08",
+        "defect": "氣泡",
+        "root_cause": "Transfer Pressure (模具壓力) 失控",
+        "description": "Molding 封膠製程發生大量 Voids。檢查發現 Transfer Cylinder 漏油，實際轉移壓力僅達標稱值的 60%，無法有效驅除模穴內殘留空氣。",
+        "source": "封膠成型工程指引 (Molding Guide)",
+        "page": 58,
+        "link": "https://example.org/guide/molding-voids#p58"
+    }
+]

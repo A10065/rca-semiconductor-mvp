@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RCA Smart Diagnostic | Semiconductor AI Expert</title>
+    <style>
+        :root {
+            --bg: #f1f4f8;
+            /* Praxie Light Blue-Gray BG */
+            --accent: #4a90e2;
+            /* Praxie Primary Blue */
+            --accent-glow: rgba(74, 144, 226, 0.2);
+            --card-bg: #ffffff;
+            --text-heading: #1c2b39;
+            --text-body: #4a4a4a;
+            --border: #e1e8ed;
+            --success: #7ed321;
+            --error: #d0021b;
+            --warning: #f5a623;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-body);
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .sidebar {
+            width: 100%;
+            height: 70px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            padding: 0 3rem;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            box-sizing: border-box;
+            gap: 2rem;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-heading);
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        /* 主面板 */
+        .main-content {
+            flex: 1;
+            padding: 2rem 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin: 0;
+            color: var(--text-heading);
+            font-weight: 700;
+        }
+
+        /* 輸入區域 */
+        .input-group {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        textarea {
+            width: 100%;
+            background: #fcfdfe;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-body);
+            font-size: 1rem;
+            padding: 1rem;
+            box-sizing: border-box;
+            resize: none;
+            outline: none;
+            height: 100px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-diagnose {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+            float: right;
+        }
+
+        .btn-diagnose:hover {
+            background: #357abd;
+            transform: translateY(-1px);
+        }
+
+        .btn-diagnose:hover {
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        /* 診斷結果 */
+        .results-container {
+            display: none;
+            flex-direction: column;
+            gap: 1.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            margin-bottom: 3rem;
+        }
+
+        .process-visual {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        /* 快速範例 */
+        .examples-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .example-tag {
+            background: #edf2f7;
+            color: #4a5568;
+            border: 1px solid transparent;
+            padding: 0.4rem 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .example-tag:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .node {
+            padding: 0.8rem;
+            border: 1px solid #cbd5e0;
+            background: white;
+            border-radius: 6px;
+            text-align: center;
+            width: 140px;
+            font-size: 0.85rem;
+            color: var(--text-heading);
+            font-weight: 500;
+        }
+
+        .arrow {
+            flex: 1;
+            height: 2px;
+            background: #cbd5e0;
+            margin: 0 10px;
+            position: relative;
+        }
+
+        .arrow::after {
+            content: '▶';
+            position: absolute;
+            right: -5px;
+            top: -8px;
+            color: #cbd5e0;
+            font-size: 0.8rem;
+        }
+
+        .report-card {
+            background: #f0fff4;
+            border: 1px solid #c6f6d5;
+            border-left: 4px solid var(--success);
+            padding: 1.5rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-verified {
+            background: var(--success);
+            color: white;
+            font-weight: 700;
+        }
+
+        /* 歷史案例 */
+        .history-item {
+            font-size: 0.9rem;
+            color: var(--text-body);
+            margin-top: 1.2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* 圖譜區域 */
+        #graphView {
+            display: none;
+            flex-direction: column;
+            height: 500px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .graph-node {
+            fill: #ffffff;
+            stroke: var(--accent);
+            stroke-width: 1.5;
+        }
+
+        .graph-text {
+            fill: var(--text-heading);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .graph-link {
+            stroke: #cbd5e0;
+            stroke-width: 1.2;
+        }
+
+        /* 8D Report Styles */
+        .eight-d-container {
+            display: none;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .d-step {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            padding: 1.2rem;
+            border-radius: 6px;
+            transition: border-color 0.2s;
+        }
+
+        .d-active {
+            border-left: 4px solid var(--accent);
+            background: #f0f7ff;
+        }
+
+        .d-title {
+            font-weight: 700;
+            color: var(--text-heading);
+            font-size: 0.95rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .d-label {
+            color: var(--accent);
+            font-weight: 800;
+            margin-right: 8px;
+        }
+
+        .d-content {
+            font-size: 0.9rem;
+            color: var(--text-body);
+            line-height: 1.6;
+        }
+
+        .highlight-text {
+            color: var(--text-heading);
+            font-weight: 600;
+        }
+
+        .tab-btn {
+            background: #f1f4f8;
+            border: 1px solid var(--border);
+            color: #718096;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .tab-active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: 0 2px 4px rgba(74, 144, 226, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div style="display: flex; align-items: baseline; gap: 12px;">
+            <div class="logo">Agentic <span>RCA</span></div>
+            <div style="font-size: 0.7rem; color: #999; font-weight: 600; white-space: nowrap;">v1.0 MFG AI</div>
+        </div>
+
+        <div
+            style="display: flex; align-items: center; gap: 1.2rem; background: #f8fafc; padding: 6px 16px; border-radius: 4px; border: 1px solid var(--border);">
+            <span style="color: var(--accent); font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Engine
+                Config</span>
+            <div style="font-size: 0.75rem; display: flex; gap: 15px; color: var(--text-body); font-weight: 500;">
+                <span>Neuro-Symbolic 2.0</span>
+                <span style="color: #cbd5e0;">|</span>
+                <span>Ontology-v4</span>
+                <span style="color: #cbd5e0;">|</span>
+                <span>RAG Milvus</span>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 20px; font-size: 0.75rem;">
+            <p style="color: var(--success); margin: 0; font-weight: 700;">● SYSTEM OPERATIONAL</p>
+            <p style="margin: 0; color: #999; font-weight: 500;">KB: 2026.03.10</p>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <p style="color: var(--accent); margin: 0;">Neuro-symbolic RAG Framework</p>
+            <h1>根因分析智慧化診斷介面</h1>
+        </div>
+
+        <div class="input-group">
+            <textarea id="userInput" placeholder="請輸入生產線異常狀況敘述..."></textarea>
+            <div class="examples-container">
+                <div class="example-tag" onclick="useExample('WB 段發現矽墊受損 (Cratered Die) 問題')"># 矽墊受損</div>
+                <div class="example-tag" onclick="useExample('打線發現金線剝離 (Wire Peeling) 比例升高')"># 金線剝離</div>
+                <div class="example-tag" onclick="useExample('AOI 檢測回報銲點偏移 (Ball Offset) 異常')"># 銲點偏移</div>
+                <div class="example-tag" onclick="useExample('封膠後超音波掃描發現有氣泡 (Void)')"># 封膠氣泡</div>
+            </div>
+            <div class="input-actions">
+                <span id="loader" style="display:none; color: var(--accent);">正在執行跨域推理...</span>
+                <span></span>
+                <button class="btn-diagnose" onclick="runDiagnosis()">開始 AI 邏輯診斷</button>
+            </div>
+        </div>
+
+        <div id="results" class="results-container">
+            <div class="eight-d-header" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                <h3 style="margin:0;">診斷推論與品質管理</h3>
+                <div style="display:flex; gap: 10px;">
+                    <button id="tabRca" class="tab-btn tab-active" onclick="switchTab('rca')">RCA 診斷總覽</button>
+                    <button id="tabGraph" class="tab-btn" onclick="switchTab('graph')">因果圖譜網絡</button>
+                    <button id="tab8d" class="tab-btn" onclick="switchTab('8d')">完整 8D 流程報告</button>
+                </div>
+            </div>
+
+            <div id="rcaView">
+                <div class="process-visual">
+                    <div class="node">缺陷特徵萃取<br><small>(Neural LLM)</small></div>
+                    <div class="arrow"></div>
+                    <div class="node">物理因果驗證<br><small>(Ontology/RDF)</small></div>
+                    <div class="arrow"></div>
+                    <div class="node" style="border-color: var(--success); color: var(--success);">確定診斷結論</div>
+                </div>
+                <div id="reportArea"></div>
+            </div>
+
+            <div id="graphView">
+                <!-- 內嵌圖譜內容 -->
+            </div>
+
+            <div id="eightDView" class="eight-d-container">
+                <!-- 8D 內容動態填充 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 擴大專業本體論數據 (Symbolic Knowledge - Semi-Expert Ver.)
+        const ontology = {
+            "矽墊受損": ["Ultrasonic Power (超音波功率)", "Bond Force (壓力)"],
+            "金線剝離": ["Bond Force (壓力)", "Capillary Life (瓷嘴壽命)", "Surface Contamination"],
+            "銲點偏移": ["EFO Current (電子火焰)", "Wand Height", "XY Table Error"],
+            "封膠氣泡": ["Transfer Pressure (轉移壓力)", "Vacuum Time", "Resin Viscosity"],
+            "IMC 異常": ["Temperature Profile", "Dwell Time", "Solder Paste Volume"]
+        };
+
+        // 擴充歷史 RAG 數據 (Neural Memory - 加入實際情境敘述)
+        const history = [
+            {
+                id: "RPT-2026-WB-05",
+                defect: "矽墊受損",
+                root_cause: "Ultrasonic Power (超音波功率) 超出規格限",
+                desc: "SEM 觀察發現矽墊下方微裂紋。WB-05 機台功率校正偏移，測得值 75mW (規範為 <60mW)。",
+                source: "封裝物理失效分析手冊",
+                page: 245,
+                link: "https://example.org/docs/physics-of-pkg#p245",
+                eightD: {
+                    d1: "製程工程團隊 (PE, QA, Maintenance)",
+                    d2: "在 WB-05 機台生產的 Batch #A291 產品中發現 Cratered Die 缺陷比例為 0.5%",
+                    d3: "隔離受影響的 Batch #A291，停止 WB-05 機台進行全面檢查",
+                    d4: "US Power 校正偏離（AI 診斷：超音波功率過載導致能量傳導破壞矽墊模型）",
+                    d5: "修正 US Power 到標準區間 (55mW)，並測試封裝切片確認無裂紋",
+                    d6: "實施機台自動功率校驗聯鎖 (Interlock)，每 100 萬點銲接執行一次自動巡檢",
+                    d7: "更新設備預防保養 (PM) 週期，每兩週執行 US Power 線性度校驗",
+                    d8: "肯定生產團隊及時回報並導入 AI 診斷之效率"
+                }
+            },
+            {
+                id: "RPT-2025-WB-12",
+                defect: "金線剝離",
+                root_cause: "Capillary (瓷嘴) 超過 1.0M 使用壽命",
+                desc: "NSOP 比例上升。機台 WB-12 瓷嘴已累計使用 1.2M 銲點，尖端磨損嚴重導致銲接強度下降。",
+                source: "設備管維規範 - WB 機台手冊",
+                page: 44,
+                link: "https://example.org/maint/wb-cap-manual#p44",
+                eightD: {
+                    d1: "設備工程、製程管控、生產督導",
+                    d2: "WB-12 打線機銲線拉力 (Wire Pull Test) 發生多起 NSOP 零克重 failure",
+                    d3: "強制退回當日生產之所有批次重啟 100% 顯微鏡視覺檢測",
+                    d4: "瓷嘴壽命耗盡導致尖端孔徑 (Tip Diameter) 擴大，無法形成有效之銲球錨定壓",
+                    d5: "立即更換全新瓷嘴，並執行銲點平滑度測試，拉力恢復至 10g 以上",
+                    d6: "將瓷嘴計數器 (Counter) 與機台 Alarm 綁定，強制在 1M 壽命點停機更換",
+                    d7: "將瓷嘴生命週期納入 MES 系統管控看板，預警剩餘壽命低於 10% 的機台",
+                    d8: "表揚設備課針對壽命計數與 Alarm 串接之改善"
+                }
+            },
+            {
+                id: "RPT-2025-QA-21",
+                defect: "銲點偏移",
+                root_cause: "EFO Current 電子火焰放電不均",
+                desc: "AOI 檢測金球偏心。主因為 EFO 放電針尖積碳，導致金球成形 (FAB) 不對稱。",
+                source: "打線製程標準作業程序 (SOP)",
+                page: 112,
+                link: "https://example.org/sop/wb-fab-process#p112",
+                eightD: {
+                    d1: "製程工程師、設備工程師、品質工程師",
+                    d2: "AOI 檢測發現銲點偏移比例異常升高，影響產品良率",
+                    d3: "暫停受影響機台生產，隔離已生產批次進行 100% 檢測",
+                    d4: "EFO 電子火焰放電不均，針尖積碳導致金球成形不對稱 (AI 診斷：EFO Current 異常導致金球形狀不穩定)",
+                    d5: "清潔 EFO 放電針，調整 EFO Current 至標準範圍，並驗證金球形狀及銲點位置",
+                    d6: "建立 EFO 放電針定期清潔與更換 SOP，並納入設備 PM 計畫",
+                    d7: "導入 EFO Current 即時監控系統，設定異常警報閾值",
+                    d8: "肯定團隊快速響應與 AI 診斷的準確性"
+                }
+            },
+            {
+                id: "RPT-2024-PKG-08",
+                defect: "封膠氣泡",
+                root_cause: "Transfer Pressure (轉移壓力) 不足",
+                desc: "Molding 發生大量 Voids。檢查發現 Transfer Cylinder 漏油，實際壓力僅達標稱值的 60%。",
+                source: "封膠成型工程指引 (Molding Guide)",
+                page: 58,
+                link: "https://example.org/guide/molding-voids#p58",
+                eightD: {
+                    d1: "模具工程師、製程工程師、材料工程師",
+                    d2: "封膠後超音波掃描發現產品內部存在氣泡 (Void)，影響可靠度",
+                    d3: "隔離所有受影響批次，停止相關模具生產",
+                    d4: "Transfer Pressure (轉移壓力) 不足，導致樹脂填充不完全 (AI 診斷：壓力不足導致氣體無法完全排出)",
+                    d5: "檢查 Transfer Cylinder 密封件，更換磨損部件，並校準壓力感測器",
+                    d6: "更新模具保養 SOP，增加 Transfer Cylinder 壓力檢測頻率",
+                    d7: "導入模壓機壓力即時監控系統，設定壓力異常警報",
+                    d8: "表揚跨部門協作解決封膠氣泡問題"
+                }
+            },
+            {
+                id: "RPT-2023-SMT-03",
+                defect: "IMC 異常",
+                root_cause: "Reflow Profile (迴焊爐溫曲線) 峰值溫度過高",
+                desc: "X-ray 檢測發現焊點 IMC 層厚度超標。爐溫曲線記錄顯示峰值溫度比 SOP 高 5°C，導致反應過度。",
+                source: "SMT 製程控制計畫",
+                page: 78,
+                link: "https://example.org/docs/smt-control-plan#p78",
+                eightD: {
+                    d1: "SMT 製程工程師、設備工程師、品質工程師",
+                    d2: "X-ray 檢測發現焊點 IMC 層厚度超標，可能影響長期可靠性",
+                    d3: "隔離受影響批次，調整迴焊爐參數，並進行小批量試產驗證",
+                    d4: "迴焊爐溫曲線峰值溫度過高，導致 IMC 層過度生長 (AI 診斷：溫度控制異常導致金屬間化合物反應過度)",
+                    d5: "調整迴焊爐溫曲線，將峰值溫度降低 5°C，並通過 X-ray 驗證 IMC 層厚度符合規範",
+                    d6: "更新迴焊爐溫曲線設定 SOP，並對操作人員進行再培訓",
+                    d7: "導入爐溫曲線自動監控與警報系統，確保溫度穩定性",
+                    d8: "肯定團隊對製程參數的精準控制與改善"
+                }
+            }
+        ];
+
+        let currentActiveDefect = null;
+
+        function useExample(text) {
+            document.getElementById('userInput').value = text;
+            runDiagnosis();
+        }
+
+        function switchTab(mode) {
+            const rcaView = document.getElementById('rcaView');
+            const eightDView = document.getElementById('eightDView');
+            const graphView = document.getElementById('graphView');
+
+            const tabRca = document.getElementById('tabRca');
+            const tabGraph = document.getElementById('tabGraph');
+            const tab8d = document.getElementById('tab8d');
+
+            [rcaView, eightDView, graphView].forEach(v => v.style.display = 'none');
+            [tabRca, tabGraph, tab8d].forEach(t => t.classList.remove('tab-active'));
+
+            if (mode === 'rca') {
+                rcaView.style.display = 'block';
+                tabRca.classList.add('tab-active');
+            } else if (mode === 'graph') {
+                graphView.style.display = 'flex';
+                tabGraph.classList.add('tab-active');
+                renderGraph(currentActiveDefect);
+            } else {
+                eightDView.style.display = 'flex';
+                tab8d.classList.add('tab-active');
+            }
+        }
+
+        function runDiagnosis() {
+            const input = document.getElementById('userInput').value;
+            if (!input) return;
+
+            const resultsDiv = document.getElementById('results');
+            const reportArea = document.getElementById('reportArea');
+            const eightDView = document.getElementById('eightDView');
+            const loader = document.getElementById('loader');
+
+            resultsDiv.style.display = 'none';
+            loader.style.display = 'inline';
+
+            setTimeout(() => {
+                loader.style.display = 'none';
+                resultsDiv.style.display = 'flex';
+                switchTab('rca');
+
+                let html = '';
+                let eightDHtml = '';
+
+                const matchedDefectKey = Object.keys(ontology).find(key => input.includes(key));
+                currentActiveDefect = matchedDefectKey;
+
+                if (matchedDefectKey) {
+                    const match = history.find(rpt => rpt.defect === matchedDefectKey) || history[0];
+
+                    html = `
+                        <div class="report-card" style="margin-top:20px;">
+                            <span class="status-badge status-verified">已通過物理因果驗證 (Symbolic Verified)</span>
+                            <h2 style="margin: 0.5rem 0;">診斷對象：${matchedDefectKey}</h2>
+                            <p style="font-size: 1.2rem; color: var(--success); font-weight: bold;">主因診斷：${match.root_cause}</p>
+                            
+                            <div class="history-item">
+                                <strong style="color: var(--accent);">📙 領域知識圖譜 (Causal Logic)：</strong><br>
+                                實體關聯：${matchedDefectKey} ← ${ontology[matchedDefectKey].join(' | ')}
+                                <br>
+                                <small style="opacity: 0.6;">知識來源：半導體製程因果體系結構 V4.0
+                                    <a href="javascript:void(0)" onclick="switchTab('graph')" style="color: var(--accent); text-decoration: none; font-weight: bold;">[查看完整因果網絡圖]</a>
+                                </small>
+                            </div>
+                            
+                            <div class="history-item" style="border-top: none; padding-top: 0.5rem;">
+                                <strong style="color: var(--accent);">🔬 歷史實證支撐 (RAG Evidence)：</strong><br>
+                                [${match.id}] - ${match.desc}
+                                <br>
+                                <small style="opacity: 0.6;">來源標記：<span style="color: #fff; font-weight: bold;">${match.source}</span> 第 ${match.page} 頁 
+                                    <a href="${match.link}" target="_blank" style="color: var(--accent); text-decoration: underline; margin-left: 5px;">[原始文獻 PDF]</a>
+                                </small>
+                            </div>
+                        </div>
+                    `;
+
+                    const d = match.eightD || { d1: "內容生成中...", d2: "內容生成中...", d3: "內容生成中...", d4: "AI 推理根因...", d5: "-", d6: "-", d7: "-", d8: "-" };
+                    const steps = [
+                        ["D1", "Use a Team (團隊組建)", d.d1],
+                        ["D2", "Problem Description (問題說明)", d.d2],
+                        ["D3", "Containment Plan (圍堵行動)", d.d3],
+                        ["D4", "Root Cause Analysis (根因分析)", d.d4, true],
+                        ["D5", "Verify Corrective Actions (對策驗證)", d.d5],
+                        ["D6", "Implement Actions (對策導入)", d.d6],
+                        ["D7", "Prevent Recurrence (預防再發)", d.d7],
+                        ["D8", "Recognize Team (最終肯定)", d.d8]
+                    ];
+
+                    eightDHtml = steps.map(([tag, title, content, active]) => `
+                        <div class="d-step ${active ? 'd-active' : ''}">
+                            <div class="d-title"><span class="d-label">${tag}</span> ${title}</div>
+                            <div class="d-content">${active ? '<span class="highlight-text">' + content + '</span>' : content}</div>
+                        </div>
+                    `).join('');
+
+                    reportArea.innerHTML = html;
+                    eightDView.innerHTML = `
+                        <div style="margin-bottom: 1rem; color: #888; font-size: 0.9rem;">
+                            以下報告遵循 ISO 品質標準 8D 問題解決模型，結合 AI 診斷結果自動生成：
+                        </div>
+                        ${eightDHtml}
+                    `;
+                }
+
+                if (!html) {
+                    reportArea.innerHTML = `<div style="padding: 2rem; background: var(--card-bg); border-radius: 12px; border: 1px dashed #444; color: #aaa;">
+                        未能從當前本體論中找到對應的物理因果鏈位。 AI 建議進行單站 FDC 參數深鑽分析。
+                    </div>`;
+                    eightDView.innerHTML = `<div style="padding: 2rem; background: var(--card-bg); border-radius: 12px; border: 1px dashed #444; color: #aaa;">
+                        無足夠資訊生成 8D 報告。
+                    </div>`;
+                }
+
+            }, 1200);
+        }
+
+        function renderGraph(activeNode = null) {
+            const container = document.getElementById('graphView');
+            const nodes = [];
+            const links = [];
+
+            // 定義領域分群 (Communities) - GraphRAG 風格
+            const clusters = {
+                "Mechanical": { color: "#4A90E2", nodes: ["Ultrasonic Power", "Bond Force", "Capillary Life"] },
+                "Thermal/Chem": { color: "#7ED321", nodes: ["Temperature Profile", "Dwell Time", "Solder Paste Volume", "Surface Contamination", "Resin Viscosity"] },
+                "Precision": { color: "#F5A623", nodes: ["EFO Current", "Wand Height", "XY Table Error", "Vacuum Time", "Transfer Pressure"] }
+            };
+
+            const getClusterColor = (id) => {
+                for (const c in clusters) {
+                    if (clusters[c].nodes.some(n => id.startsWith(n))) return clusters[c].color;
+                }
+                return "#cbd5e0";
+            };
+
+            const allParams = new Set();
+            for (const defect in ontology) {
+                ontology[defect].forEach(pFull => {
+                    allParams.add(pFull.split(' (')[0]);
+                });
+            }
+            const paramsList = Array.from(allParams).sort();
+            const defectsList = Object.keys(ontology).sort();
+
+            paramsList.forEach((p, i) => {
+                const angle = (i / paramsList.length) * Math.PI * 2;
+                const radius = 120 + (i % 3) * 15;
+                nodes.push({ id: p, x: 450 + Math.cos(angle) * radius, y: 250 + Math.sin(angle) * radius, role: 'parameter', color: getClusterColor(p), size: 8 });
+            });
+
+            defectsList.forEach((d, i) => {
+                const angle = (i / defectsList.length) * Math.PI * 2 + 0.5;
+                const radius = 220;
+                nodes.push({ id: d, x: 450 + Math.cos(angle) * radius, y: 250 + Math.sin(angle) * radius, role: 'defect', color: "#1c2b39", size: 14 });
+            });
+
+            for (let d in ontology) {
+                ontology[d].forEach(pFull => {
+                    links.push({ source: pFull.split(' (')[0], target: d });
+                });
+            }
+
+            let svgHtml = `
+                <svg viewBox="0 0 900 500" class="graph-svg" style="background: radial-gradient(circle, #fcfdfe 0%, #f1f4f8 100%);">
+                    <defs>
+                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+            `;
+
+            links.forEach(l => {
+                const s = nodes.find(n => n.id === l.source);
+                const t = nodes.find(n => n.id === l.target);
+                if (s && t) {
+                    const isHighlighted = (activeNode && (t.id === activeNode));
+                    const color = isHighlighted ? "var(--accent)" : "rgba(203, 213, 224, 0.4)";
+                    const strokeWidth = isHighlighted ? 2.5 : 1;
+                    const dx = t.x - s.x;
+                    const dy = t.y - s.y;
+                    const dr = Math.sqrt(dx * dx + dy * dy);
+                    svgHtml += `<path d="M${s.x},${s.y}A${dr},${dr} 0 0,1 ${t.x},${t.y}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" />`;
+                }
+            });
+
+            nodes.forEach(n => {
+                const isMainDefect = (activeNode && n.id === activeNode);
+                const isMainParameter = (activeNode && ontology[activeNode] && ontology[activeNode].some(pFull => pFull.split(' (')[0] === n.id));
+                const isMainNode = isMainDefect || isMainParameter;
+                const color = isMainNode ? "var(--accent)" : n.color;
+
+                svgHtml += `
+                    <g transform="translate(${n.x},${n.y})">
+                        <circle r="${isMainNode ? n.size + 4 : n.size}" fill="${color}" stroke="white" stroke-width="2" filter="${isMainNode ? 'url(#glow)' : 'none'}" />
+                        <text class="graph-text" y="${n.role === 'defect' ? 25 : -15}" style="font-size: ${n.role === 'defect' ? '12px' : '10px'}; font-weight: ${isMainNode ? '800' : '500'}; fill: var(--text-heading); text-anchor: middle;">${n.id}</text>
+                    </g>
+                `;
+            });
+
+            svgHtml += `</svg>`;
+            container.innerHTML = `
+                <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-weight: 700; color: var(--text-heading);">🌌 GraphRAG 結構化因果網絡</div>
+                    <div style="display: flex; gap: 15px; font-size: 0.75rem;">
+                        <span style="display:flex; align-items:center; gap:5px;"><div style="width:10px; height:10px; border-radius:50%; background:#4A90E2;"></div> Mechanical</span>
+                        <span style="display:flex; align-items:center; gap:5px;"><div style="width:10px; height:10px; border-radius:50%; background:#7ED321;"></div> Thermal/Chem</span>
+                        <span style="display:flex; align-items:center; gap:5px;"><div style="width:10px; height:10px; border-radius:50%; background:#F5A623;"></div> Precision</span>
+                    </div>
+                </div>
+                <div style="flex:1; position:relative; overflow:hidden;">
+                    ${svgHtml}
+                    <div style="position:absolute; bottom:20px; right:20px; font-size:0.7rem; color:#999; text-align:right;">
+                        * 節點大小代表知識權重<br>
+                        * 曲線代表因果傳導路徑
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+
+</html>
