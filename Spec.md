@@ -3,10 +3,12 @@
 ## 1. 系統架構與選型
 本系統採用 **Neuro-symbolic 混合架構**，將大型語言模型 (Neural) 的生成能力與本體論 (Symbolic) 的邏輯嚴謹性結合。
 
-- **Frontend**: Vanilla JS + CSS (Sleek Dark UI)
+- **Frontend**: Vanilla JS + CSS (Praxie-inspired Professional Light UI)
+- **Visualization**: GraphRAG Galaxy-style Causal Network SVG
 - **Backend API Interface**: Node.js
-- **Symbolic Layer**: RDF/Turtle + Causal Logic
-- **Neural Layer**: Vector Search (Milvus Simulator) + LLM (Context Injection)
+- **Symbolic Layer**: RDF/Turtle + Causal Ontology
+- **Neural Layer**: Vector Search Retrieval + LLM (Context Injection)
+- **Quality Standard**: ISO 8D Automated Reporting
 
 ## 2. 資料模型 (ERD 邏輯)
 
